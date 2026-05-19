@@ -227,7 +227,7 @@ function notifyElapsed() {
   if (s.onBreak) {
     if (!s.lastBreakNotify) return;
     const breakElapsed = (new Date() - new Date(s.lastBreakNotify)) / 60000;
-    if (breakElapsed >= 60) {
+    if (breakElapsed >= 30) {
       const totalBreak = Math.round(s.breakTotalMin + (new Date() - new Date(s.breakStart)) / 60000);
       if (push('😴 休憩中だニャ😺\n合計' + totalBreak + '分休んでるニャ😺\nそろそろ再開するニャ？😺')) {
         s.lastBreakNotify = new Date().toISOString();
