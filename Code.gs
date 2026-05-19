@@ -24,8 +24,8 @@ const NOTION_DB_ID         = PROPS.getProperty('NOTION_DB_ID');
 const TZ = 'Asia/Tokyo';
 
 // ポモドーロ設定(テスト時は 1 と 2 に。本番は 50 と 60)
-const NOTIFY_FIRST_MIN  = 50;
-const NOTIFY_SECOND_MIN = 60;
+const NOTIFY_FIRST_MIN  = 100;
+const NOTIFY_SECOND_MIN = 120;
 
 // ============================================================
 //  コマンドルーター
