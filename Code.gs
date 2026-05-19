@@ -127,7 +127,7 @@ function getState() {
   if (!raw) {
     return {
       working: false, clockIn: '', onBreak: false, breakStart: '', breakTotalMin: 0,
-      cycleStart: '', notified50: false, notified60: false,
+      cycleStart: '', notified50: false, notified60: false, lastBreakNotify: '',
     };
   }
   return JSON.parse(raw);
@@ -153,6 +153,7 @@ function handleClockIn() {
     cycleStart: now.toISOString(),
     notified50: false,
     notified60: false,
+    lastBreakNotify: '',
   });
   return '出勤したニャ(' + fmt(now) + ')😺\n' + NOTIFY_FIRST_MIN + '分後に教えるニャ😺';
 }
@@ -164,6 +165,7 @@ function handleBreakStart() {
   const now = new Date();
   s.onBreak = true;
   s.breakStart = now.toISOString();
+  s.lastBreakNotify = now.toISOString();
   setState(s);
   return '休憩スタートだニャ(' + fmt(now) + ')😺\nゆっくり休むニャ😺';
 }
@@ -220,7 +222,21 @@ function handleClockOut() {
 function notifyElapsed() {
   const s = getState();
   if (!s.working) return;
-  if (s.onBreak)  return;
+
+  // 休憩中: 1時間ごとに通知
+  if (s.onBreak) {
+    if (!s.lastBreakNotify) return;
+    const breakElapsed = (new Date() - new Date(s.lastBreakNotify)) / 60000;
+    if (breakElapsed >= 60) {
+      const totalBreak = Math.round(s.breakTotalMin + (new Date() - new Date(s.breakStart)) / 60000);
+      if (push('😴 休憩中だニャ😺\n合計' + totalBreak + '分休んでるニャ😺\nそろそろ再開するニャ？😺')) {
+        s.lastBreakNotify = new Date().toISOString();
+        setState(s);
+      }
+    }
+    return;
+  }
+
   if (!s.cycleStart) return;
 
   const elapsedMin = (new Date() - new Date(s.cycleStart)) / 60000;
