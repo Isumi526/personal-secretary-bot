@@ -235,7 +235,10 @@ function notifyElapsed() {
 
   if (elapsedMin >= NOTIFY_SECOND_MIN && !s.notified60) {
     if (push('🔔 さらに' + (NOTIFY_SECOND_MIN - NOTIFY_FIRST_MIN) + '分たって計' + NOTIFY_SECOND_MIN + '分だニャ😺\n「休憩」って送って休むニャ😺')) {
-      s.notified60 = true;
+      // サイクルをリセット → 次の50分/60分通知が繰り返される
+      s.cycleStart = new Date().toISOString();
+      s.notified50 = false;
+      s.notified60 = false;
       setState(s);
     }
     return;
