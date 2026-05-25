@@ -155,7 +155,8 @@ function handleClockIn() {
     notified60: false,
     lastBreakNotify: '',
   });
-  return '出勤したニャ(' + fmt(now) + ')😺\n' + NOTIFY_FIRST_MIN + '分後に教えるニャ😺';
+  const notifyAt = new Date(now.getTime() + NOTIFY_FIRST_MIN * 60000);
+  return '出勤したニャ(' + fmt(now) + ')😺\n' + NOTIFY_FIRST_MIN + '分後(' + fmt(notifyAt) + ')に教えるニャ😺';
 }
 
 function handleBreakStart() {
@@ -167,7 +168,9 @@ function handleBreakStart() {
   s.breakStart = now.toISOString();
   s.lastBreakNotify = now.toISOString();
   setState(s);
-  return '休憩スタートだニャ(' + fmt(now) + ')😺\nゆっくり休むニャ😺';
+  const netMinBreak = (now - new Date(s.clockIn)) / 60000 - s.breakTotalMin;
+  const netHoursBreak = Math.round((netMinBreak / 60) * 10) / 10;
+  return '休憩スタートだニャ(' + fmt(now) + ')😺\n今日の稼働は' + netHoursBreak + '時間だニャ😺\nゆっくり休むニャ😺';
 }
 
 function handleBreakEnd() {
@@ -183,7 +186,8 @@ function handleBreakEnd() {
   s.notified50 = false;
   s.notified60 = false;
   setState(s);
-  return '再開だニャ(' + fmt(now) + ')😺\n今日の休憩は合計' + Math.round(s.breakTotalMin) + '分だニャ😺\n' + NOTIFY_FIRST_MIN + '分後に教えるニャ😺';
+  const notifyAt = new Date(now.getTime() + NOTIFY_FIRST_MIN * 60000);
+  return '再開だニャ(' + fmt(now) + ')😺\n今日の休憩は合計' + Math.round(s.breakTotalMin) + '分だニャ😺\n' + NOTIFY_FIRST_MIN + '分後(' + fmt(notifyAt) + ')に教えるニャ😺';
 }
 
 function handleClockOut() {
@@ -242,7 +246,9 @@ function notifyElapsed() {
   const elapsedMin = (new Date() - new Date(s.cycleStart)) / 60000;
 
   if (elapsedMin >= NOTIFY_FIRST_MIN && !s.notified50) {
-    if (push('⏰ 作業はじめてから' + NOTIFY_FIRST_MIN + '分たったニャ😺\nそろそろ区切る準備をするニャ😺')) {
+    const netMin1 = (new Date() - new Date(s.clockIn)) / 60000 - s.breakTotalMin;
+    const netHours1 = Math.round((netMin1 / 60) * 10) / 10;
+    if (push('⏰ 作業はじめてから' + NOTIFY_FIRST_MIN + '分たったニャ😺\n今日の稼働は' + netHours1 + '時間だニャ😺\nそろそろ区切る準備をするニャ😺')) {
       s.notified50 = true;
       setState(s);
     }
@@ -250,7 +256,9 @@ function notifyElapsed() {
   }
 
   if (elapsedMin >= NOTIFY_SECOND_MIN && !s.notified60) {
-    if (push('🔔 さらに' + (NOTIFY_SECOND_MIN - NOTIFY_FIRST_MIN) + '分たって計' + NOTIFY_SECOND_MIN + '分だニャ😺\n「休憩」って送って休むニャ😺')) {
+    const netMin2 = (new Date() - new Date(s.clockIn)) / 60000 - s.breakTotalMin;
+    const netHours2 = Math.round((netMin2 / 60) * 10) / 10;
+    if (push('🔔 さらに' + (NOTIFY_SECOND_MIN - NOTIFY_FIRST_MIN) + '分たって計' + NOTIFY_SECOND_MIN + '分だニャ😺\n今日の稼働は' + netHours2 + '時間だニャ😺\n「休憩」って送って休むニャ😺')) {
       // サイクルをリセット → 次の50分/60分通知が繰り返される
       s.cycleStart = new Date().toISOString();
       s.notified50 = false;
